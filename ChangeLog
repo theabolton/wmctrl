@@ -1,3 +1,5 @@
+23 Nov 2012  Sean Bolton  <sean@smbolton.com>
+  * Extend '-p' flag to allow matching windows by process ID
 
 03 Jan 2005  Tomas Styblo  <tripie@cpan.org>
   * 1.07 released

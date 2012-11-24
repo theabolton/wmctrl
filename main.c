@@ -80,7 +80,8 @@ Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 "\n" \
 "Options:\n" \
 "  -i                   Interpret <WIN> as a numerical window ID.\n" \
-"  -p                   Include PIDs in the window list. Very few\n" \
+"  -p                   Interpret <WIN> as a numerical process ID, or.\n" \
+"                       include PIDs in the window list. Very few\n" \
 "                       X applications support this feature.\n" \
 "  -G                   Include geometry in the window list.\n" \
 "  -x                   Include WM_CLASS in the window list or\n" \
@@ -203,6 +204,7 @@ static int switch_desktop (Display *disp);
 static int wm_info (Display *disp);
 static gchar *get_output_str (gchar *str, gboolean is_utf8);
 static int action_window (Display *disp, Window win, char mode);
+static int action_window_wid (Display *disp, char mode);
 static int action_window_pid (Display *disp, char mode);
 static int action_window_str (Display *disp, char mode);
 static int activate_window (Display *disp, Window win, 
@@ -227,9 +229,9 @@ static struct {
     int verbose;
     int force_utf8;
     int show_class;
-    int show_pid;
+    int match_by_pid;
     int show_geometry;
-    int match_by_id;
+    int match_by_wid;
     int match_by_cls;
     int full_window_title_match;
     int wa_desktop_titles_invalid_utf8;
@@ -274,7 +276,7 @@ int main (int argc, char **argv) { /* {{{ */
                 options.show_geometry = 1;
                 break;
             case 'i':
-                options.match_by_id = 1;
+                options.match_by_wid = 1;
                 break;
             case 'v':
                 options.verbose = 1;
@@ -287,7 +289,7 @@ int main (int argc, char **argv) { /* {{{ */
                 options.show_class = 1;
                 break;
             case 'p':
-                options.show_pid = 1;
+                options.match_by_pid = 1;
                 break;
             case 'a': case 'c': case 'R':
                 options.param_window = optarg;
@@ -361,7 +363,10 @@ int main (int argc, char **argv) { /* {{{ */
                 fputs("No window was specified.\n", stderr);
                 return EXIT_FAILURE;
             }
-            if (options.match_by_id) {
+            if (options.match_by_wid) {
+                ret = action_window_wid(disp, action);
+            }
+            else if (options.match_by_pid) {
                 ret = action_window_pid(disp, action);
             }
             else {
@@ -916,7 +921,7 @@ static int action_window (Display *disp, Window win, char mode) {/*{{{*/
     }
 }/*}}}*/
 
-static int action_window_pid (Display *disp, char mode) {/*{{{*/
+static int action_window_wid (Display *disp, char mode) {/*{{{*/
     unsigned long wid;
 
     if (sscanf(options.param_window, "0x%lx", &wid) != 1 &&
@@ -927,6 +932,47 @@ static int action_window_pid (Display *disp, char mode) {/*{{{*/
     }
 
     return action_window(disp, (Window)wid, mode);
+}/*}}}*/
+
+static int action_window_pid (Display *disp, char mode) {/*{{{*/
+    unsigned long target_pid;
+    Window *client_list;
+    unsigned long client_list_size;
+    Window activate = 0;
+    int i;
+
+    if (sscanf(options.param_window, "%lu", &target_pid) != 1) {
+        fputs("Cannot convert PID argument to number.\n", stderr);
+        return EXIT_FAILURE;
+    }
+
+    if ((client_list = get_client_list(disp, &client_list_size)) == NULL) {
+        return EXIT_FAILURE; 
+    }
+
+    for (i = 0; i < client_list_size / sizeof(Window); i++) {
+        unsigned long *ppid, pid;
+
+        ppid = (unsigned long *)get_property(disp, client_list[i],
+                    XA_CARDINAL, "_NET_WM_PID", NULL);
+        if (ppid == NULL)
+            continue;
+        pid = *ppid;
+        g_free(ppid);
+
+        if (pid != 0 && pid == target_pid) {
+            activate = client_list[i];
+            break;
+        }
+    }
+    g_free(client_list);
+
+    if (activate) {
+        return action_window(disp, activate, mode);
+    }
+    else {
+        return EXIT_FAILURE;
+    }
 }/*}}}*/
 
 static int action_window_str (Display *disp, char mode) {/*{{{*/
@@ -1332,7 +1378,7 @@ static int list_windows (Display *disp) {/*{{{*/
            have to convert the desktop value to signed long */
         printf("0x%.8lx %2ld", client_list[i], 
                 desktop ? (signed long)*desktop : 0);
-        if (options.show_pid) {
+        if (options.match_by_pid) {
            printf(" %-6lu", pid ? *pid : 0);
         }
         if (options.show_geometry) {

@@ -229,10 +229,15 @@ prefix '0x' it is assumed to be a hexadecimal number.
 
 .TP
 .B \-p
-Include PIDs in the window list printed by the 
+For actions taking a window argument
+.RI ( <WIN> ),
+interpret that argument as a numeric process ID. A process may have
+more than one window, in which case the first found in used. For
+those applications which do not inform the window manager of their
+process ID, no matching window will be found. For the
 .B \-l
-action. Prints a PID of '0' if the application owning the window does
-not support it.
+action, include process IDs in the printed window list. Prints a PID
+of '0' if the application owning the window does not support it.
 
 .TP
 .B \-u
@@ -291,7 +296,11 @@ option may be used to force exact, case sensitive title matching. The
 option
 .B \-i
 may be used to interpret the window target as a numeric window
-identity instead of a string. 
+identifier instead of a string. The option
+.B \-p
+may be used to interpret the window target as a numeric process
+identifier.
+
 .IP
 The window name string
 .B :SELECT:
