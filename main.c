@@ -230,7 +230,7 @@ static struct {
     int show_pid;
     int show_geometry;
     int match_by_id;
-	int match_by_cls;
+    int match_by_cls;
     int full_window_title_match;
     int wa_desktop_titles_invalid_utf8;
     char *param_window;
@@ -282,10 +282,10 @@ int main (int argc, char **argv) { /* {{{ */
             case 'u':
                 options.force_utf8 = 1;
                 break;
-			case 'x':
-				options.match_by_cls = 1;
-				options.show_class = 1;
-				break;
+            case 'x':
+                options.match_by_cls = 1;
+                options.show_class = 1;
+                break;
             case 'p':
                 options.show_pid = 1;
                 break;
@@ -550,7 +550,7 @@ static int wm_info (Display *disp) {/*{{{*/
     g_free(name_out);
     g_free(sup_window);
     g_free(wm_name);
-	g_free(wm_class);
+    g_free(wm_class);
     g_free(wm_pid);
     g_free(showing_desktop);
     
@@ -961,13 +961,13 @@ static int action_window_str (Display *disp, char mode) {/*{{{*/
         }
         
         for (i = 0; i < client_list_size / sizeof(Window); i++) {
- 			gchar *match_utf8;
- 			if (options.show_class) {
- 	            match_utf8 = get_window_class(disp, client_list[i]); /* UTF8 */
- 			}
- 			else {
- 				match_utf8 = get_window_title(disp, client_list[i]); /* UTF8 */
- 			}
+            gchar *match_utf8;
+            if (options.show_class) {
+                match_utf8 = get_window_class(disp, client_list[i]); /* UTF8 */
+            }
+            else {
+                match_utf8 = get_window_title(disp, client_list[i]); /* UTF8 */
+            }
             if (match_utf8) {
                 gchar *match;
                 gchar *match_cf;
@@ -1322,7 +1322,7 @@ static int list_windows (Display *disp) {/*{{{*/
         pid = (unsigned long *)get_property(disp, client_list[i],
                 XA_CARDINAL, "_NET_WM_PID", NULL);
 
-	    /* geometry */
+        /* geometry */
         XGetGeometry (disp, client_list[i], &junkroot, &junkx, &junky,
                           &wwidth, &wheight, &bw, &depth);
         XTranslateCoordinates (disp, client_list[i], junkroot, junkx, junky,
@@ -1338,15 +1338,15 @@ static int list_windows (Display *disp) {/*{{{*/
         if (options.show_geometry) {
            printf(" %-4d %-4d %-4d %-4d", x, y, wwidth, wheight);
         }
-		if (options.show_class) {
-		   printf(" %-20s ", class_out ? class_out : "N/A");
-		}
+        if (options.show_class) {
+           printf(" %-20s ", class_out ? class_out : "N/A");
+        }
 
         printf(" %*s %s\n",
               max_client_machine_len,
               client_machine ? client_machine : "N/A",
               title_out ? title_out : "N/A"
-		);
+        );
         g_free(title_utf8);
         g_free(title_out);
         g_free(desktop);
