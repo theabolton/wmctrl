@@ -653,28 +653,28 @@ static void window_set_title (Display *disp, Window win, /* {{{ */
         /* set name */
         if (title_local) {
             XChangeProperty(disp, win, XA_WM_NAME, XA_STRING, 8, PropModeReplace,
-                    title_local, strlen(title_local));
+                    (unsigned char *)title_local, strlen(title_local));
         }
         else {
             XDeleteProperty(disp, win, XA_WM_NAME);
         }
         XChangeProperty(disp, win, XInternAtom(disp, "_NET_WM_NAME", False), 
                 XInternAtom(disp, "UTF8_STRING", False), 8, PropModeReplace,
-                title_utf8, strlen(title_utf8));
+                (unsigned char *)title_utf8, strlen(title_utf8));
     }
 
     if (mode == 'T' || mode == 'I') {
         /* set icon name */
         if (title_local) {
             XChangeProperty(disp, win, XA_WM_ICON_NAME, XA_STRING, 8, PropModeReplace,
-                    title_local, strlen(title_local));
+                    (unsigned char *)title_local, strlen(title_local));
         }
         else {
             XDeleteProperty(disp, win, XA_WM_ICON_NAME);
         }
         XChangeProperty(disp, win, XInternAtom(disp, "_NET_WM_ICON_NAME", False), 
                 XInternAtom(disp, "UTF8_STRING", False), 8, PropModeReplace,
-                title_utf8, strlen(title_utf8));
+                (unsigned char *)title_utf8, strlen(title_utf8));
     }
     
     g_free(title_utf8);
